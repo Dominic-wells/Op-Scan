@@ -1,5 +1,11 @@
 import socket
 import threading
+from alive_progress import alive_bar
+from pyfiglet import figlet_format
+
+
+#https://github.com/pwaller/pyfiglet
+#https://github.com/rsalmei/alive-progress
 
 #This is a class with an instance variable
 #Guidance from https://pynative.com/python-instance-variables/
@@ -12,7 +18,7 @@ class PortScanner:
     def scan(self, port):
         try:
             sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(0.5)
+            sock.settimeout(2)
             results=sock.connect_ex((self.host, port))
             sock.close()
             if results == 0:
@@ -22,16 +28,18 @@ class PortScanner:
         except:
             print("Unable to connect to host {}".format(self.host))
 
-#This function will create a list of threads, it will then create a thread for each port (1-1025) and then start each thread and join each thread passing the port number to the scan function
+#This function will create a list of threads, it will then create a thread for each port (0-1025) and then start each thread and join each thread passing the port number to the scan function
 #Guidance from http://pymotw.com/2/threading/ and https://docs.python.org/3/library/threading.html 
     def scanAllPorts(self):
         threads = []
-        for port in range(1, 1025):
-            thread = threading.Thread(target=self.scan, args=(port,))
-            threads.append(thread)
-            thread.start()
-        for thread in threads:
-            thread.join()
+        with alive_bar(65000, title='Scanning') as bar:
+            for port in range(0, 65000):
+                thread = threading.Thread(target=self.scan, args=(port,))
+                threads.append(thread)
+                thread.start()
+                bar()
+            for thread in threads:
+                thread.join()
 
 #This function will create a list of threads, it will then create a thread for each port (most vulnerable) and then start each thread and join each thread passing the port number to the scan function
 #Guideance from http://pymotw.com/2/threading/ and https://docs.python.org/3/library/threading.html and https://blog.netwrix.com/2022/08/04/open-port-vulnerabilities-list
@@ -47,6 +55,7 @@ class PortScanner:
             
 #This function will display the menu and call the functions
 def main():
+    print( figlet_format("Op-scanner", font="big"))
     print("Welcome to the Op-scanner")
     while True:
         print("1. Scan all ports")
@@ -70,3 +79,14 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
+
+
+
