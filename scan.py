@@ -12,6 +12,7 @@ from pyfiglet import figlet_format
 class PortScanner:
     def __init__(self, host):
         self.host = host
+        self.results = []
 
 # This function will pass the user input from the main meunu function and scan the ports, it will return the status of the ports by printing open or closed
 # guidence from https://docs.python.org/3/library/socket.html
@@ -23,17 +24,20 @@ class PortScanner:
             sock.close()
             if results == 0:
                 print("Port {}: Open".format(port))
+                self.results.append("port {}: Open".format(port))
             else:
                 print("Port {}: Closed".format(port))
+                self.results.append("port {}: Closed".format(port))
         except:
             print("Unable to connect to host {}".format(self.host))
+            self.results.append("Unable to connect to host {}".format(self.host))
 
 #This function will create a list of threads, it will then create a thread for each port (0-1025) and then start each thread and join each thread passing the port number to the scan function
 #Guidance from http://pymotw.com/2/threading/ and https://docs.python.org/3/library/threading.html 
     def scanAllPorts(self):
         threads = []
         with alive_bar(65000, title='Scanning') as bar:
-            for port in range(0, 65000):
+            for port in range(1, 65000):
                 thread = threading.Thread(target=self.scan, args=(port,))
                 threads.append(thread)
                 thread.start()
@@ -52,6 +56,14 @@ class PortScanner:
             thread.start()
         for thread in threads:
             thread.join()
+    
+#This function will save the results to a text file    
+    def saveResults(self):
+        with open('results.txt', 'w') as f:
+            for result in self.results:
+                f.write(result + '\n')
+        print("Results saved to results.txt")
+        
             
 #This function will display the menu and call the functions
 def main():
@@ -60,7 +72,8 @@ def main():
     while True:
         print("1. Scan all ports")
         print("2. Scan most vulnerable ports")
-        print("3. Exit")
+        print("3. Save results to file")
+        print("4. Exit")
         choice = input("Enter your choice: ")
         if choice == "1":
             host = input("Enter host to scan: ")
@@ -71,6 +84,9 @@ def main():
             scanner = PortScanner(host)
             scanner.scanVulnerablePorts()
         elif choice == "3":
+            scanner.saveResults()
+            break
+        elif choice == "4":
             print("Goodbye, See you next time")
             break
         else:
