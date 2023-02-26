@@ -58,9 +58,9 @@ class PortScanner:
         for thread in threads:
             thread.join()
     
-#This function will save the results to a text file    
+#This function will save the results to a text file with the current date and time 
     def saveResults(self):
-        current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+        current_time = time.strftime("%Y-%m-%d--%H-%M-%S", time.gmtime())
         file_name = "Results " + current_time + ".txt"
         with open(file_name, 'w') as f:
             for result in sorted(self.results):
