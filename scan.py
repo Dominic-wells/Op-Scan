@@ -2,6 +2,7 @@ import socket
 import threading
 from alive_progress import alive_bar
 from pyfiglet import figlet_format
+import time
 
 
 #https://github.com/pwaller/pyfiglet
@@ -26,7 +27,7 @@ class PortScanner:
                 print("Port {}: Open".format(port))
                 self.results.append("port {}: Open".format(port))
             else:
-                print("Port {}: Closed".format(port))
+                # print("Port {}: Closed".format(port))
                 self.results.append("port {}: Closed".format(port))
         except:
             print("Unable to connect to host {}".format(self.host))
@@ -36,8 +37,8 @@ class PortScanner:
 #Guidance from http://pymotw.com/2/threading/ and https://docs.python.org/3/library/threading.html 
     def scanAllPorts(self):
         threads = []
-        with alive_bar(65000, title='Scanning') as bar:
-            for port in range(1, 65000):
+        with alive_bar(65535, title='Scanning') as bar:
+            for port in range(1, 65535):
                 thread = threading.Thread(target=self.scan, args=(port,))
                 threads.append(thread)
                 thread.start()
@@ -59,11 +60,13 @@ class PortScanner:
     
 #This function will save the results to a text file    
     def saveResults(self):
-        with open('results.txt', 'w') as f:
-            for result in self.results:
+        current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+        file_name = "Results " + current_time + ".txt"
+        with open(file_name, 'w') as f:
+            for result in sorted(self.results):
                 f.write(result + '\n')
-        print("Results saved to results.txt")
-        
+        print(f"Results saved to file '{file_name}'.")
+
             
 #This function will display the menu and call the functions
 def main():
