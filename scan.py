@@ -4,7 +4,7 @@ from alive_progress import alive_bar
 from pyfiglet import figlet_format
 import time
 
-
+#https://docs.python.org/3/library/time.html
 #https://github.com/pwaller/pyfiglet
 #https://github.com/rsalmei/alive-progress
 
@@ -58,14 +58,25 @@ class PortScanner:
         for thread in threads:
             thread.join()
     
-#This function will save the results to a text file with the current date and time and in order of port number
+#This function will save the results to a text file with the current date and time and in order of open and closed ports in port number order
 #guidance for lambda sorting from https://sparkbyexamples.com/python/sort-using-lambda-in-python/ , https://www.freecodecamp.org/news/the-string-strip-method-in-python-explained/ 
 #and https://stackoverflow.com/questions/17474211/how-to-sort-python-list-of-strings-of-numbers
     def saveResults(self):
         current_time = time.strftime("%Y-%m-%d--%H-%M-%S", time.gmtime())
         file_name = "Results " + current_time + ".txt"
+        open_ports = []
+        closed_ports = []
+        for result in self.results:
+            if 'Open' in result:
+                open_ports.append(result)
+            else:
+                closed_ports.append(result)
         with open(file_name, 'w') as f:
-            for result in sorted(self.results, key=lambda x: int(x.split()[1].rstrip(':'))):
+            f.write("Open ports:\n")
+            for result in sorted(open_ports, key=lambda x: int(x.split()[1].rstrip(':'))):
+                f.write(result + '\n')
+            f.write("\nClosed ports:\n")
+            for result in sorted(closed_ports, key=lambda x: int(x.split()[1].rstrip(':'))):
                 f.write(result + '\n')
         print(f"Results saved to file '{file_name}'.")
 
@@ -90,13 +101,11 @@ def main():
             scanner.scanVulnerablePorts()
         elif choice == "3":
             scanner.saveResults()
-            break
         elif choice == "4":
             print("Goodbye, See you next time")
             break
         else:
             print("Invalid choice")
-
 
 if __name__ == "__main__":
     main()
