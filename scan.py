@@ -42,9 +42,9 @@ class PortScanner:
                 thread = threading.Thread(target=self.scan, args=(port,))
                 threads.append(thread)
                 thread.start()
-                bar()
             for thread in threads:
                 thread.join()
+                bar()
 
 #This function will create a list of threads, it will then create a thread for each port (most vulnerable) and then start each thread and join each thread passing the port number to the scan function
 #Guideance from http://pymotw.com/2/threading/ and https://docs.python.org/3/library/threading.html and https://blog.netwrix.com/2022/08/04/open-port-vulnerabilities-list
