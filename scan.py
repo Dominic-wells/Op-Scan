@@ -17,7 +17,7 @@ class PortScanner:
 
 # This function will pass the user input from the main meunu function and scan the ports, it will return the status of the ports by printing open or closed
 # guidence from https://docs.python.org/3/library/socket.html
-    def scan(self, port):
+    def scan(self, port, bar=None):
         try:
             sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(2)
@@ -27,11 +27,12 @@ class PortScanner:
                 print("Port {}: Open".format(port))
                 self.results.append("port {}: Open".format(port))
             else:
-                # print("Port {}: Closed".format(port))
                 self.results.append("port {}: Closed".format(port))
+            if bar:
+                bar()
         except:
             print("Unable to connect to host {}".format(self.host))
-            self.results.append("Unable to connect to host {}".format(self.host))
+            self.results.append("Unable to connect to host {}".format(self.host))        
 
 #This function will create a list of threads, it will then create a thread for each port (0-1025) and then start each thread and join each thread passing the port number to the scan function
 #Guidance from http://pymotw.com/2/threading/ and https://docs.python.org/3/library/threading.html 
@@ -39,12 +40,14 @@ class PortScanner:
         threads = []
         with alive_bar(65535, title='Scanning') as bar:
             for port in range(1, 65535):
-                thread = threading.Thread(target=self.scan, args=(port,))
+                if hasattr(self, 'connection_failed'):
+                    break
+                thread = threading.Thread(target=self.scan, args=(port, bar))
                 threads.append(thread)
                 thread.start()
             for thread in threads:
                 thread.join()
-                bar()
+
 
 #This function will create a list of threads, it will then create a thread for each port (most vulnerable) and then start each thread and join each thread passing the port number to the scan function
 #Guideance from http://pymotw.com/2/threading/ and https://docs.python.org/3/library/threading.html and https://blog.netwrix.com/2022/08/04/open-port-vulnerabilities-list
@@ -52,6 +55,8 @@ class PortScanner:
         ports = [20, 21, 23, 25, 53, 80, 137, 139, 443, 1433, 1434, 3306, 3389, 8080, 8443]
         threads = []
         for port in ports:
+            if hasattr(self, 'connection_failed'):
+                break
             thread = threading.Thread(target=self.scan, args=(port,))
             threads.append(thread)
             thread.start()
@@ -100,7 +105,7 @@ def main():
             scanner = PortScanner(host)
             scanner.scanVulnerablePorts()
         elif choice == "3":
-            scanner.saveResults()
+            scanner.saveResults() 
         elif choice == "4":
             print("Goodbye, See you next time")
             break
@@ -109,3 +114,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
