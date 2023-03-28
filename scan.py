@@ -15,6 +15,7 @@ class PortScanner:
         self.host = host
         self.results = []
 
+
 # This function will pass the user input from the main meunu function and scan the ports, it will return the status of the ports by printing open or closed
 # guidence from https://docs.python.org/3/library/socket.html
     def scan(self, port, bar=None):
@@ -33,6 +34,7 @@ class PortScanner:
         except:
             print("Unable to connect to host {}".format(self.host))
             self.results.append("Unable to connect to host {}".format(self.host))        
+
 
 #This function will create a list of threads, it will then create a thread for each port (0-1025) and then start each thread and join each thread passing the port number to the scan function
 #Guidance from http://pymotw.com/2/threading/ and https://docs.python.org/3/library/threading.html 
@@ -63,6 +65,15 @@ class PortScanner:
         for thread in threads:
             thread.join()
     
+#This function will perform a DNS lookup on the host and return the IP address.    
+    def dns_lookup(self):
+        try:
+            ip_address = socket.gethostbyname(self.host)
+            print(f"{self.host} resolved to {ip_address}")
+        except socket.gaierror:
+            print(f"Could not resolve {self.host}")
+
+
 #This function will save the results to a text file with the current date and time and in order of open and closed ports in port number order
 #guidance for lambda sorting from https://sparkbyexamples.com/python/sort-using-lambda-in-python/ , https://www.freecodecamp.org/news/the-string-strip-method-in-python-explained/ 
 #and https://stackoverflow.com/questions/17474211/how-to-sort-python-list-of-strings-of-numbers
@@ -94,7 +105,8 @@ def main():
         print("1. Scan all ports")
         print("2. Scan most vulnerable ports")
         print("3. Save results to file")
-        print("4. Exit")
+        print("4. Perform DNS lookup")
+        print("5. Exit")
         choice = input("Enter your choice: ")
         if choice == "1":
             host = input("Enter host to scan: ")
@@ -107,11 +119,14 @@ def main():
         elif choice == "3":
             scanner.saveResults() 
         elif choice == "4":
+            host = input("Enter host to perform DNS lookup: ")
+            scanner = PortScanner(host)
+            scanner.dns_lookup()
+        elif choice == "5":
             print("Goodbye, See you next time")
             break
         else:
-            print("Invalid choice")
-
+            print("Invalid choice...")
+            
 if __name__ == "__main__":
     main()
-
