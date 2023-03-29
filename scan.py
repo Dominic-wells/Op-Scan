@@ -3,6 +3,7 @@ import threading
 from alive_progress import alive_bar
 from pyfiglet import figlet_format
 import time
+import whois
 
 #https://docs.python.org/3/library/time.html
 #https://github.com/pwaller/pyfiglet
@@ -73,6 +74,22 @@ class PortScanner:
         except socket.gaierror:
             print(f"Could not resolve {self.host}")
 
+#this function will perform a WHOIS lookup on the host and return the domain name, registrar, creation date expiration date , status, emails, orgName, orgAddress, orgCity and postalCode
+    def whois_lookup(self):
+        try:
+            domain_info = whois.whois(self.host)
+            print(f"Domain name: {domain_info.name}")
+            print(f"Registrar: {domain_info.registrar}")
+            print(f"Creation date: {domain_info.creation_date}")
+            print(f"Expiration date: {domain_info.expiration_date}")
+            print(f"Status: {domain_info.status}")
+            print(f"Emails: {domain_info.emails}")
+            print(f"orgName: {domain_info.orgName}")
+            print(f"orgAddress: {domain_info.orgAddress}")
+            print(f"orgCity: {domain_info.orgCity}")
+            print(f"postalCode: {domain_info.postalCode}")
+        except whois.exceptions.WhoisLookupError:
+            print(f"Could not perform WHOIS lookup for {self.host}")
 
 #This function will save the results to a text file with the current date and time and in order of open and closed ports in port number order
 #guidance for lambda sorting from https://sparkbyexamples.com/python/sort-using-lambda-in-python/ , https://www.freecodecamp.org/news/the-string-strip-method-in-python-explained/ 
@@ -106,7 +123,8 @@ def main():
         print("2. Scan most vulnerable ports")
         print("3. Save results to file")
         print("4. Perform DNS lookup")
-        print("5. Exit")
+        print("5. Perform WHOIS lookup")
+        print("6. Exit")
         choice = input("Enter your choice: ")
         if choice == "1":
             host = input("Enter host to scan: ")
@@ -123,6 +141,10 @@ def main():
             scanner = PortScanner(host)
             scanner.dns_lookup()
         elif choice == "5":
+            host = input("Enter domain to lookup: ")
+            scanner = PortScanner(host)
+            scanner.whois_lookup()    
+        elif choice == "6":
             print("Goodbye, See you next time")
             break
         else:
