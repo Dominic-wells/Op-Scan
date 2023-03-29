@@ -5,9 +5,6 @@ from pyfiglet import figlet_format
 import time
 import whois
 
-#https://docs.python.org/3/library/time.html
-#https://github.com/pwaller/pyfiglet
-#https://github.com/rsalmei/alive-progress
 
 #This is a class with an instance variable
 #Guidance from https://pynative.com/python-instance-variables/
@@ -65,7 +62,8 @@ class PortScanner:
             thread.start()
         for thread in threads:
             thread.join()
-    
+
+
 #This function will perform a DNS lookup on the host and return the IP address.    
     def dns_lookup(self):
         try:
@@ -74,7 +72,8 @@ class PortScanner:
         except socket.gaierror:
             print(f"Could not resolve {self.host}")
 
-#this function will perform a WHOIS lookup on the host and return the domain name, registrar, creation date expiration date , status, emails, orgName, orgAddress, orgCity and postalCode
+
+#This function will perform a WHOIS lookup on the host and return the domain name, registrar, creation date expiration date , status, emails, orgName, orgAddress, orgCity and postalCode.
     def whois_lookup(self):
         try:
             domain_info = whois.whois(self.host)
@@ -90,6 +89,7 @@ class PortScanner:
             print(f"postalCode: {domain_info.postalCode}")
         except whois.exceptions.WhoisLookupError:
             print(f"Could not perform WHOIS lookup for {self.host}")
+
 
 #This function will save the results to a text file with the current date and time and in order of open and closed ports in port number order
 #guidance for lambda sorting from https://sparkbyexamples.com/python/sort-using-lambda-in-python/ , https://www.freecodecamp.org/news/the-string-strip-method-in-python-explained/ 
@@ -113,18 +113,22 @@ class PortScanner:
                 f.write(result + '\n')
         print(f"Results saved to file '{file_name}'.")
 
-            
-#This function will display the menu and call the functions
+
+#This function will display the menu and call the functions ready for the user to select an option.
 def main():
+    print('\n' * 2)
     print( figlet_format("Op-scanner", font="big"))
     print("Welcome to the Op-scanner")
     while True:
+        print()
+        print(u'\u2500' * 30)
         print("1. Scan all ports")
         print("2. Scan most vulnerable ports")
         print("3. Save results to file")
         print("4. Perform DNS lookup")
         print("5. Perform WHOIS lookup")
         print("6. Exit")
+        print(u'\u2500' * 30)
         choice = input("Enter your choice: ")
         if choice == "1":
             host = input("Enter host to scan: ")
