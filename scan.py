@@ -96,7 +96,7 @@ class PortScanner:
 #and https://stackoverflow.com/questions/17474211/how-to-sort-python-list-of-strings-of-numbers
     def saveResults(self):
         current_time = time.strftime("%Y-%m-%d--%H-%M-%S", time.gmtime())
-        file_name = "Results " + current_time + ".txt"
+        file_name = f"{self.host}-Results-{current_time}.txt"
         open_ports = []
         closed_ports = []
         for result in self.results:
