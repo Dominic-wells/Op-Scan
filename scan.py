@@ -4,6 +4,8 @@ from alive_progress import alive_bar
 from pyfiglet import figlet_format
 import time
 import whois
+from port_to_service import port_to_service
+
 
 
 #This is a class with an instance variable
@@ -14,24 +16,26 @@ class PortScanner:
         self.results = []
 
 
-# This function will pass the user input from the main meunu function and scan the ports, it will return the status of the ports by printing open or closed
-# guidence from https://docs.python.org/3/library/socket.html
+#This function will pass the user input from the main meunu function and scan the ports, 
+#it will return the status of the ports by printing open or closed as well as the service running on the port if it is open by importing a dictionary from Port_to_service that holds common values.
+#guidence from https://docs.python.org/3/library/socket.html
     def scan(self, port, bar=None):
         try:
-            sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(2)
-            results=sock.connect_ex((self.host, port))
+            result = sock.connect_ex((self.host, port))
             sock.close()
-            if results == 0:
-                print("Port {}: Open".format(port))
-                self.results.append("port {}: Open".format(port))
+            if result == 0:
+                service = port_to_service.get(port, 'Unknown')
+                print(f"Port {port}: {service} is open")
+                self.results.append(f"Port {port}: {service} is open")
             else:
-                self.results.append("port {}: Closed".format(port))
+                self.results.append(f"Port {port}: Closed")
             if bar:
                 bar()
         except:
-            print("Unable to connect to host {}".format(self.host))
-            self.results.append("Unable to connect to host {}".format(self.host))        
+            print(f"Unable to connect to host {self.host}")
+            self.results.append(f"Unable to connect to host {self.host}")
 
 
 #This function will create a list of threads, it will then create a thread for each port (0-1025) and then start each thread and join each thread passing the port number to the scan function
@@ -100,7 +104,7 @@ class PortScanner:
         open_ports = []
         closed_ports = []
         for result in self.results:
-            if 'Open' in result:
+            if 'open' in result:
                 open_ports.append(result)
             else:
                 closed_ports.append(result)
@@ -111,7 +115,6 @@ class PortScanner:
             f.write("\nClosed ports:\n")
             for result in sorted(closed_ports, key=lambda x: int(x.split()[1].rstrip(':'))):
                 f.write(result + '\n')
-        print(f"Results saved to file '{file_name}'.")
 
 
 #This function will display the menu and call the functions ready for the user to select an option.
