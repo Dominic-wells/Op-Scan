@@ -1,11 +1,20 @@
-import socket
-import threading
-from alive_progress import alive_bar
-from pyfiglet import figlet_format
-import time
-import whois
-from port_to_service import port_to_service
-
+#This will try to import the modules needed for the program to run, if it fails it will print an error message and exit the program.
+#Guidance from https://blog.airbrake.io/blog/python/importerror-and-modulenotfounderror
+try:
+    import socket
+    import threading
+    from alive_progress import alive_bar
+    from pyfiglet import figlet_format
+    import time
+    import whois
+    from port_to_service import port_to_service
+except ImportError as e:
+    if e.name == 'port_to_service':
+        print("The 'port_to_service' dictionary is not installed, make sure to download that also.")
+    else:
+        print(f"Missing module: {e.name}")
+        print("Please install the module using `pip install <module_name>`")
+    exit(1)
 
 
 #This is a class with an instance variable
@@ -44,8 +53,6 @@ class PortScanner:
         threads = []
         with alive_bar(65535, title='Scanning') as bar:
             for port in range(1, 65535):
-                if hasattr(self, 'connection_failed'):
-                    break
                 thread = threading.Thread(target=self.scan, args=(port, bar))
                 threads.append(thread)
                 thread.start()
@@ -59,8 +66,6 @@ class PortScanner:
         ports = [20, 21, 23, 25, 53, 80, 137, 139, 443, 1433, 1434, 3306, 3389, 8080, 8443]
         threads = []
         for port in ports:
-            if hasattr(self, 'connection_failed'):
-                break
             thread = threading.Thread(target=self.scan, args=(port,))
             threads.append(thread)
             thread.start()
@@ -117,11 +122,12 @@ class PortScanner:
                 f.write(result + '\n')
 
 
-#This function will display the menu and call the functions ready for the user to select an option.
+#This function will display the menu and call the functions ready for the user to select an option, added error handling for saving scan without performing a scan first.
 def main():
     print('\n' * 2)
     print( figlet_format("Op-scanner", font="big"))
     print("Welcome to the Op-scanner")
+    scanner = None 
     while True:
         print()
         print(u'\u2500' * 30)
@@ -142,7 +148,10 @@ def main():
             scanner = PortScanner(host)
             scanner.scanVulnerablePorts()
         elif choice == "3":
-            scanner.saveResults() 
+            if scanner:
+                scanner.saveResults()
+            else:
+                print("No results to save. Please run a scan first.")
         elif choice == "4":
             host = input("Enter host to perform DNS lookup: ")
             scanner = PortScanner(host)
