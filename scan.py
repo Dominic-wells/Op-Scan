@@ -11,9 +11,11 @@ try:
 except ImportError as e:
     if e.name == 'port_to_service':
         print("The 'port_to_service' dictionary is not installed, make sure to download that also.")
+    if e.name == 'whois':
+        print("The 'whois' module is not installed, please install it using `py -m pip install python-whois`")
     else:
         print(f"Missing module: {e.name}")
-        print("Please install the module using `pip install <module_name>`")
+        print("Please install the module using `py -m pip install <module_name>`")
     exit(1)
 
 
