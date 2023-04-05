@@ -90,7 +90,7 @@ class PortScanner:
 
 #This function will perform a DNS lookup on the host and return the IP address.
 #Error handling is used to catch any errors that may occur during the lookup.
-    def dns_lookup(self):
+    def dnsLookup(self):
         try:
             ip_address = socket.gethostbyname(self.host)
             print(f"{self.host} resolved to {ip_address}")
@@ -100,7 +100,7 @@ class PortScanner:
 
 #This function will perform a WHOIS lookup on the host and return the domain name, registrar, creation date expiration date,
 # status, emails, organization Name, organization Address, organization City and postalCode.
-    def whois_lookup(self):
+    def whoisLookup(self):
         try:
             domain_info = whois.whois(self.host)
             print(f"Domain name: {domain_info.domain_name}")
@@ -174,11 +174,11 @@ def main():
         elif choice == "4":
             host = input("Enter host to perform DNS lookup: ")
             scanner = PortScanner(host)
-            scanner.dns_lookup()
+            scanner.dnsLookup()
         elif choice == "5":
             host = input("Enter domain to lookup: ")
             scanner = PortScanner(host)
-            scanner.whois_lookup()    
+            scanner.whoisLookup()    
         elif choice == "6":
             print("Goodbye, See you next time")
             break
