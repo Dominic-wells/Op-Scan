@@ -7,13 +7,16 @@ try:
     from pyfiglet import figlet_format
     import time
     import whois
-    from port_to_service import port_to_service
+    import concurrent.futures
+    from port_to_service import port_to_service   
 except ImportError as e:
     if e.name == 'port_to_service':
         print("The 'port_to_service' dictionary is not installed, make sure to download that also.")
+    if e.name == 'whois':
+        print("The 'whois' module is not installed, please install it using `py -m pip install python-whois`")
     else:
         print(f"Missing module: {e.name}")
-        print("Please install the module using `pip install <module_name>`")
+        print("Please install the module using `py -m pip install <module_name>`")
     exit(1)
 
 
@@ -23,10 +26,13 @@ class PortScanner:
     def __init__(self, host):
         self.host = host
         self.results = []
-
+        self.error_printed = False
+        self.lock = threading.Lock()
+        self.error_occurred = False
 
 #This function will pass the user input from the main meunu function and scan the ports, 
 #it will return the status of the ports by printing open or closed as well as the service running on the port if it is open by importing a dictionary from Port_to_service that holds common values.
+#If an error occurs during the scan, it is printed to the console and the error flag is set.
 #guidence from https://docs.python.org/3/library/socket.html
     def scan(self, port, bar=None):
         try:
@@ -42,26 +48,35 @@ class PortScanner:
                 self.results.append(f"Port {port}: Closed")
             if bar:
                 bar()
-        except:
-            print(f"Unable to connect to host {self.host}")
-            self.results.append(f"Unable to connect to host {self.host}")
+        except socket.error:
+            with self.lock:
+                if not self.error_printed:
+                    print(f"Unable to connect to host {self.host}")
+                    self.error_printed = True
+                    self.results.append(f"Unable to connect to host {self.host}")
+                    self.error_occurred = True
 
 
-#This function will create a list of threads, it will then create a thread for each port (0-1025) and then start each thread and join each thread passing the port number to the scan function
-#Guidance from http://pymotw.com/2/threading/ and https://docs.python.org/3/library/threading.html 
+#This function performs a port scan on all ports in the range (1, 65535), It creates a ThreadPoolExecutor with a maximum of 100 workers to run the scans concurrently 
+#The progress of the scan is displayed using the alive-bar, If an error occurs during the scan, all remaining scans are canceled 
+#Guideance from http://pymotw.com/2/threading/ , https://docs.python.org/3/library/threading.html ,https://www.digitalocean.com/community/tutorials/how-to-use-threadpoolexecutor-in-python-3 and https://blog.netwrix.com/2022/08/04/open-port-vulnerabilities-list
     def scanAllPorts(self):
-        threads = []
-        with alive_bar(65535, title='Scanning') as bar:
-            for port in range(1, 65535):
-                thread = threading.Thread(target=self.scan, args=(port, bar))
-                threads.append(thread)
-                thread.start()
-            for thread in threads:
-                thread.join()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+            port_range = range(1, 65535)
+            with alive_bar(65535, title='Scanning') as bar:
+                futures = [executor.submit(self.scan, port, bar) for port in port_range]
+                for future in concurrent.futures.as_completed(futures):
+                    if self.error_occurred:
+                        for f in futures:
+                            f.cancel()
+                        break
+                    future.result()
 
 
+#This function scans a pre-defined list of vulnerable ports and appends the results to the `results` list.
+#If an error occurs during the scan, it prints an error message and sets the `error_occurred` flag to True.   
 #This function will create a list of threads, it will then create a thread for each port (most vulnerable) and then start each thread and join each thread passing the port number to the scan function
-#Guideance from http://pymotw.com/2/threading/ and https://docs.python.org/3/library/threading.html and https://blog.netwrix.com/2022/08/04/open-port-vulnerabilities-list
+#Guideance from http://pymotw.com/2/threading/ , https://docs.python.org/3/library/threading.html and https://blog.netwrix.com/2022/08/04/open-port-vulnerabilities-list
     def scanVulnerablePorts(self):
         ports = [20, 21, 23, 25, 53, 80, 137, 139, 443, 1433, 1434, 3306, 3389, 8080, 8443]
         threads = []
@@ -82,22 +97,25 @@ class PortScanner:
             print(f"Could not resolve {self.host}")
 
 
-#This function will perform a WHOIS lookup on the host and return the domain name, registrar, creation date expiration date , status, emails, orgName, orgAddress, orgCity and postalCode.
+#This function will perform a WHOIS lookup on the host and return the domain name, registrar, creation date expiration date,
+# status, emails, organization Name, organization Address, organization City and postalCode.
     def whois_lookup(self):
         try:
             domain_info = whois.whois(self.host)
-            print(f"Domain name: {domain_info.name}")
+            print(f"Domain name: {domain_info.domain_name}")
             print(f"Registrar: {domain_info.registrar}")
             print(f"Creation date: {domain_info.creation_date}")
             print(f"Expiration date: {domain_info.expiration_date}")
             print(f"Status: {domain_info.status}")
             print(f"Emails: {domain_info.emails}")
-            print(f"orgName: {domain_info.orgName}")
-            print(f"orgAddress: {domain_info.orgAddress}")
-            print(f"orgCity: {domain_info.orgCity}")
-            print(f"postalCode: {domain_info.postalCode}")
-        except whois.exceptions.WhoisLookupError:
-            print(f"Could not perform WHOIS lookup for {self.host}")
+            print(f"orgName: {domain_info.org}")
+            print(f"orgAddress: {domain_info.org_address}")
+            print(f"orgCity: {domain_info.city}")
+            print(f"postalCode: {domain_info.zipcode}")
+        except socket.gaierror:
+            print(f"Error: Could not resolve hostname {self.host}")
+        except whois.parser.PywhoisError:
+            print(f"Error: Could not perform WHOIS lookup for {self.host}")
 
 
 #This function will save the results to a text file with the current date and time and in order of open and closed ports in port number order
