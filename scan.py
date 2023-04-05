@@ -89,7 +89,7 @@ class PortScanner:
 
 
 #This function will perform a DNS lookup on the host and return the IP address.
-#Error handling is used to catch any errors that may occur during the lookup.  
+#Error handling is used to catch any errors that may occur during the lookup.
     def dns_lookup(self):
         try:
             ip_address = socket.gethostbyname(self.host)
