@@ -88,7 +88,8 @@ class PortScanner:
             thread.join()
 
 
-#This function will perform a DNS lookup on the host and return the IP address.    
+#This function will perform a DNS lookup on the host and return the IP address.
+#Error handling is used to catch any errors that may occur during the lookup.  
     def dns_lookup(self):
         try:
             ip_address = socket.gethostbyname(self.host)
@@ -141,6 +142,7 @@ class PortScanner:
 
 
 #This function will display the menu and call the functions ready for the user to select an option, added error handling for saving scan without performing a scan first.
+#
 def main():
     print('\n' * 2)
     print( figlet_format("Op-scanner", font="big"))
