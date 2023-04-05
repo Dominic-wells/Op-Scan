@@ -121,7 +121,7 @@ class PortScanner:
 
 #This function will save the results to a text file with the current date and time and in order of open and closed ports in port number order
 #guidance for lambda sorting from https://sparkbyexamples.com/python/sort-using-lambda-in-python/ , https://www.freecodecamp.org/news/the-string-strip-method-in-python-explained/ 
-#and https://stackoverflow.com/questions/17474211/how-to-sort-python-list-of-strings-of-numbers
+#and https://stackoverflow.com/questions/17474211/how-to-sort-python-list-of-strings-of-numbers.
     def saveResults(self):
         current_time = time.strftime("%Y-%m-%d--%H-%M-%S", time.gmtime())
         file_name = f"{self.host}-Results-{current_time}.txt"
@@ -142,7 +142,6 @@ class PortScanner:
 
 
 #This function will display the menu and call the functions ready for the user to select an option, added error handling for saving scan without performing a scan first.
-#
 def main():
     print('\n' * 2)
     print( figlet_format("Op-scanner", font="big"))
