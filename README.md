@@ -1,4 +1,4 @@
-![Welcome Screenshot](.image/Op-scanner welcome.png)
+![Welcome Screenshot](Op-scan/image/Op-scanner welcome.png)
 
 # Op-Scanner
 
